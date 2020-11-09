@@ -55,6 +55,7 @@ userSchema.pre("save", function (next) {
   }
 });
 
+// 비밀번호 확인 method
 userSchema.methods.comparePassword = function (plainPassword, cb) {
   // plainPassword : req.body.password(유저가 입력한 비밀번호);
   // 암호화된 비밀번호($2b$10$a..)를 복호화 할 수 없으므로 plainPassword를 암호화하여 비교
@@ -65,6 +66,7 @@ userSchema.methods.comparePassword = function (plainPassword, cb) {
   });
 };
 
+// 토큰 생성 method
 userSchema.methods.generateToken = function (cb) {
   var user = this;
   //   jsonwebtoken을 이용해서 token을 생성하기
@@ -75,6 +77,22 @@ userSchema.methods.generateToken = function (cb) {
   user.save(function (err, user) {
     if (err) return cb(err);
     cb(null, user);
+  });
+};
+
+userSchema.statics.findByToken = function (token, cb) {
+  var user = this;
+
+  // 토큰을 decode 한다.
+  // user._id + "secretToken" = token;
+  jwt.verify(token, "secretToken", function (err, decoded) {
+    // decoded : secretToken을 분리한 token
+    // 유저 아이디를 이용해서 유저를 찾은 다음,(user._id === decoded)
+    // 클라이언트에서 가져온 token과 DB에 보관된 토큰이 일치하는지 확인
+    user.findOne({ _id: decoded, token: token }, function (err, user) {
+      if (err) return cb(err);
+      cb(null, user);
+    });
   });
 };
 
