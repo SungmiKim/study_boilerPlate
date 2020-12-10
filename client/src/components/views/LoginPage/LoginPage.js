@@ -1,8 +1,9 @@
+import { response } from "express";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { loginUser } from "../../../_actions/user_action";
 
-function LoginPage() {
+function LoginPage(props) {
   const dispatch = useDispatch();
 
   const [Email, setEmail] = useState("");
@@ -24,7 +25,13 @@ function LoginPage() {
       password: Password,
     };
 
-    dispatch(loginUser(body));
+    dispatch(loginUser(body)).then((response) => {
+      if (response.payload.loginSuccess) {
+        props.history.push("/");
+      } else {
+        alert("Error");
+      }
+    });
   };
 
   return (
